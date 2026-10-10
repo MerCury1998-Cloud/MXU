@@ -722,6 +722,67 @@ export async function getGitHubDownloadUrl(
   return null;
 }
 
+export interface CheckGitHubUpdateOptions {
+  githubUrl: string;
+  currentVersion: string;
+  githubPat?: string; // GitHub Personal Access Token
+  proxyUrl?: string; // 代理 URL，用于 GitHub API 请求
+}
+
+/**
+ * 直接用 GitHub Releases 作为版本源检查更新
+ *
+ * 适用于 `interface.json` 未配置 `mirrorchyan_rid`、只配置了 `github` 的项目。
+ * 私有仓库可在设置里填写 GitHub Token 后访问。
+ * @returns UpdateInfo 或 null（检查失败时）
+ */
+export async function checkGitHubUpdate(
+  options: CheckGitHubUpdateOptions,
+): Promise<UpdateInfo | null> {
+  const { githubUrl, currentVersion, githubPat, proxyUrl } = options;
+  const parsed = parseGitHubUrl(githubUrl);
+  if (!parsed) {
+    log.warn('无法解析 GitHub URL:', githubUrl);
+    return null;
+  }
+
+  let release: GitHubRelease | null = null;
+  try {
+    release = await invoke<GitHubRelease | null>('get_github_latest_release', {
+      owner: parsed.owner,
+      repo: parsed.repo,
+      githubPat,
+      proxyUrl,
+    });
+  } catch (error) {
+    log.error('获取 GitHub 最新 Release 失败:', error);
+    return null;
+  }
+
+  if (!release) {
+    log.warn('未获取到 GitHub Release');
+    return null;
+  }
+
+  const versionName = release.tag_name;
+  const hasUpdate = compareVersions(versionName, currentVersion) > 0;
+  const asset = hasUpdate ? await matchGitHubAsset(release.assets) : null;
+
+  log.info(
+    `GitHub 更新检查完成: 最新版本=${versionName}, 有更新=${hasUpdate}, 资源=${asset?.name ?? '无'}`,
+  );
+
+  return {
+    hasUpdate,
+    versionName,
+    releaseNote: release.body || '',
+    downloadUrl: asset?.browser_download_url,
+    fileSize: asset?.size,
+    filename: asset?.name,
+    downloadSource: asset ? 'github' : undefined,
+  };
+}
+
 interface DownloadUpdateOptions {
   url: string;
   savePath: string;
@@ -867,7 +928,8 @@ export interface CheckAndDownloadOptions extends CheckUpdateOptions {
 
 /**
  * 检查更新并获取下载信息
- * 始终使用 Mirror酱 检查更新，根据是否有 CDK 决定下载来源
+ * - 配置了 Mirror酱 rid：用 Mirror酱 检查版本，根据是否有 CDK 决定下载来源
+ * - 未配置 rid 但有 GitHub 仓库：直接用 GitHub Releases 作为版本源
  */
 export async function checkAndPrepareDownload(
   options: CheckAndDownloadOptions,
@@ -879,6 +941,21 @@ export async function checkAndPrepareDownload(
   }
 
   const { githubUrl, cdk, channel, githubPat, projectName, proxyUrl, ...checkOptions } = options;
+
+  // 未配置 Mirror酱 rid 时，直接用 GitHub Releases 检查更新
+  if (!checkOptions.resourceId) {
+    if (!githubUrl) {
+      log.warn('未配置 mirrorchyan_rid 与 github，跳过更新检查');
+      return null;
+    }
+    log.info('未配置 mirrorchyan_rid，改用 GitHub Releases 检查更新');
+    return await checkGitHubUpdate({
+      githubUrl,
+      currentVersion: checkOptions.currentVersion,
+      githubPat,
+      proxyUrl,
+    });
+  }
 
   // 始终使用 Mirror酱 检查更新
   const updateInfo = await checkUpdate({ ...checkOptions, cdk, channel });

@@ -373,6 +373,7 @@ export interface AppState {
   mirrorChyanSettings: MirrorChyanSettings;
   setMirrorChyanCdk: (cdk: string) => void;
   setMirrorChyanChannel: (channel: UpdateChannel) => void;
+  setGithubPat: (githubPat: string) => void;
 
   // 代理设置
   proxySettings: ProxySettings | undefined;

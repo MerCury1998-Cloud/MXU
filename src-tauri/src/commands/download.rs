@@ -59,19 +59,17 @@ static DOWNLOAD_CANCELLED: AtomicBool = AtomicBool::new(false);
 /// 当前下载的 session ID，用于区分不同的下载任务
 static CURRENT_DOWNLOAD_SESSION: AtomicU64 = AtomicU64::new(0);
 
-/// 根据版本号获取 GitHub Release URL
-///
-/// 使用 GitHub API 获取指定版本的 Release 信息，支持使用 GitHub PAT 和代理
-/// 解析 GitHub API 返回的 JSON 数据，找到与 target_version 匹配的 release，并返回 URL
-#[tauri::command]
-pub async fn get_github_release_by_version(
-    owner: String,
-    repo: String,
-    target_version: String,
+/// 请求 GitHub Releases 列表（支持 GitHub PAT 和代理）
+async fn fetch_github_releases(
+    owner: &str,
+    repo: &str,
     github_pat: Option<String>,
     proxy_url: Option<String>,
-) -> Result<Option<GitHubRelease>, String> {
-    let url = format!("https://api.github.com/repos/{}/{}/releases", owner, repo);
+) -> Result<Vec<GitHubRelease>, String> {
+    let url = format!(
+        "https://api.github.com/repos/{}/{}/releases?per_page=30",
+        owner, repo
+    );
 
     // 构造请求头
     let mut client_builder = reqwest::Client::builder()
@@ -125,6 +123,23 @@ pub async fn get_github_release_by_version(
         .await
         .map_err(|e| format!("解析 JSON 失败: {}", e))?;
 
+    Ok(releases)
+}
+
+/// 根据版本号获取 GitHub Release URL
+///
+/// 使用 GitHub API 获取指定版本的 Release 信息，支持使用 GitHub PAT 和代理
+/// 解析 GitHub API 返回的 JSON 数据，找到与 target_version 匹配的 release，并返回 URL
+#[tauri::command]
+pub async fn get_github_release_by_version(
+    owner: String,
+    repo: String,
+    target_version: String,
+    github_pat: Option<String>,
+    proxy_url: Option<String>,
+) -> Result<Option<GitHubRelease>, String> {
+    let releases = fetch_github_releases(&owner, &repo, github_pat, proxy_url).await?;
+
     let normalize = |v: &str| {
         v.trim_start_matches(|c| c == 'v' || c == 'V')
             .to_lowercase()
@@ -142,6 +157,35 @@ pub async fn get_github_release_by_version(
     }
     warn!("未找到匹配的 Release: target_version={}", target_version);
     Ok(None)
+}
+
+/// 获取最新的 GitHub Release
+///
+/// 未配置 Mirror酱 rid 时，直接用 GitHub Releases 作为版本源：
+/// 跳过草稿，优先返回最新的正式版；若只有预发布版，则返回最新的预发布版。
+#[tauri::command]
+pub async fn get_github_latest_release(
+    owner: String,
+    repo: String,
+    github_pat: Option<String>,
+    proxy_url: Option<String>,
+) -> Result<Option<GitHubRelease>, String> {
+    let releases = fetch_github_releases(&owner, &repo, github_pat, proxy_url).await?;
+
+    // GitHub API 的 releases 列表默认按创建时间倒序，第一个非草稿即为最新
+    let mut fallback: Option<GitHubRelease> = None;
+    for release in releases {
+        if release.draft {
+            continue;
+        }
+        if !release.prerelease {
+            return Ok(Some(release));
+        }
+        if fallback.is_none() {
+            fallback = Some(release);
+        }
+    }
+    Ok(fallback)
 }
 
 /// 流式下载文件，支持进度回调和取消

@@ -685,6 +685,10 @@ export default {
     cdkHintAfterLink:
       ' 是独立的第三方加速下载服务，需要付费使用，并非「{{projectName}}」收费。其运营成本由订阅收入支撑，部分收益将回馈项目开发者。欢迎订阅 CDK 享受高速下载，同时支持项目持续开发。未填写 CDK 时将自动通过 GitHub 下载，若失败请尝试配置网络代理。',
     getCdk: '没有CDK？立即订阅',
+    githubToken: 'GitHub Token',
+    githubTokenPlaceholder: '输入 GitHub Token（私有仓库必填，公开仓库可留空）',
+    githubTokenHint:
+      '用于从私有仓库拉取更新。请生成 fine-grained PAT，仅授予该仓库的 Contents: Read 权限；留空则只能访问公开仓库。',
     cdkHint: '请检查您的 CDK 是否正确或已过期',
     slowDownloadHint: '其他渠道',
     checkUpdate: '检查更新',

@@ -708,6 +708,11 @@ export default {
     cdkHintAfterLink:
       ' is an independent third-party accelerated download service that requires a paid subscription, not a fee charged by "{{projectName}}". Its operating costs are covered by subscription revenue, with a portion supporting project developers. Subscribe for high-speed downloads while supporting ongoing development. Without a CDK, downloads will fall back to GitHub. If that fails, please configure a network proxy.',
     getCdk: 'No CDKey? Subscribe Now',
+    githubToken: 'GitHub Token',
+    githubTokenPlaceholder:
+      'Enter a GitHub Token (required for private repos, optional for public ones)',
+    githubTokenHint:
+      'Used to pull updates from a private repository. Create a fine-grained PAT and grant only Contents: Read for that repo; leave empty to access public repos only.',
     cdkHint: 'Please check if your CDK is correct or has expired',
     slowDownloadHint: 'Other channels',
     checkUpdate: 'Check for Updates',

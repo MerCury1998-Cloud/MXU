@@ -495,9 +495,15 @@ pub struct GitHubAsset {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GitHubRelease {
     pub tag_name: String,
+    #[serde(default)]
     pub name: String,
+    #[serde(default)]
     pub body: Option<String>,
+    #[serde(default)]
     pub prerelease: bool,
+    #[serde(default)]
+    pub draft: bool,
+    #[serde(default)]
     pub assets: Vec<GitHubAsset>,
 }
 

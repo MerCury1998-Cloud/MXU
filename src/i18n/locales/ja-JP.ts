@@ -708,6 +708,11 @@ export default {
     cdkHintAfterLink:
       ' は独立したサードパーティの高速ダウンロードサービスで、有料サブスクリプションが必要です。これは「{{projectName}}」の料金ではありません。運営費はサブスクリプション収入で賄われ、一部は開発者に還元されます。CDK を購読して高速ダウンロードをお楽しみください。CDK を入力しない場合、GitHub からダウンロードします。失敗した場合は、ネットワークプロキシを設定してください。',
     getCdk: 'CDKをお持ちでない方はこちら',
+    githubToken: 'GitHub Token',
+    githubTokenPlaceholder:
+      'GitHub Token を入力（プライベートリポジトリは必須、公開リポジトリは空欄可）',
+    githubTokenHint:
+      'プライベートリポジトリから更新を取得するために使用します。fine-grained PAT を作成し、対象リポジトリの Contents: Read のみを付与してください。空欄の場合は公開リポジトリのみ取得できます。',
     cdkHint: 'CDK が正しいか、または有効期限が切れていないか確認してください',
     slowDownloadHint: '他の入手先',
     checkUpdate: '更新を確認',

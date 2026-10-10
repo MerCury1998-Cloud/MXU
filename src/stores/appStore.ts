@@ -1989,6 +1989,10 @@ export const useAppStore = create<AppState>()(
       set((state) => ({
         mirrorChyanSettings: { ...state.mirrorChyanSettings, channel },
       })),
+    setGithubPat: (githubPat) =>
+      set((state) => ({
+        mirrorChyanSettings: { ...state.mirrorChyanSettings, githubPat },
+      })),
 
     // 代理设置
     proxySettings: undefined,
