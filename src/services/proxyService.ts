@@ -171,6 +171,7 @@ export async function downloadWithProxy(
   options?: {
     totalSize?: number;
     proxyUrl?: string | null;
+    githubPat?: string | null;
   },
 ): Promise<DownloadResult> {
   const hasProxy = options?.proxyUrl && options.proxyUrl.trim() !== '';
@@ -190,5 +191,6 @@ export async function downloadWithProxy(
     savePath,
     totalSize: options?.totalSize || null,
     proxyUrl: options?.proxyUrl || null,
+    githubPat: options?.githubPat || null,
   });
 }

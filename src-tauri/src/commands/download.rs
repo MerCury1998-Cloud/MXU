@@ -203,6 +203,7 @@ pub async fn download_file(
     save_path: String,
     total_size: Option<u64>,
     proxy_url: Option<String>,
+    github_pat: Option<String>,
 ) -> Result<DownloadResult, String> {
     use futures_util::StreamExt;
     use std::io::Write;
@@ -254,8 +255,17 @@ pub async fn download_file(
         .build()
         .map_err(|e| format!("创建 HTTP 客户端失败: {}", e))?;
 
-    let response = client
-        .get(&url)
+    let mut request = client.get(&url);
+
+    // 私有库的 release 资产下载同样需要鉴权。GitHub 对该地址会 302 跳到签名地址，
+    // reqwest 在跨 host 重定向时默认剥离 Authorization，因此只加在首次请求上。
+    if let Some(pat) = github_pat {
+        if !pat.trim().is_empty() {
+            request = request.header(AUTHORIZATION, format!("token {}", pat.trim()));
+        }
+    }
+
+    let response = request
         .send()
         .await
         .map_err(|e| format!("请求失败: {}", e))?;

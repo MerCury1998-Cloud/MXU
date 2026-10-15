@@ -467,6 +467,7 @@ function App() {
           savePath,
           totalSize: updateResult.fileSize,
           proxySettings: proxyForDownload,
+          githubPat: appState.mirrorChyanSettings.githubPat || undefined,
           onProgress: (progress: DownloadProgress) => {
             setDownloadProgress(progress);
           },

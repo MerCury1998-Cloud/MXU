@@ -72,6 +72,7 @@ export function UpdatePanel({ onClose, anchorRef }: UpdatePanelProps) {
         savePath,
         totalSize: updateInfo.fileSize,
         proxySettings: proxyForDownload,
+        githubPat: mirrorChyanSettings.githubPat || undefined,
         onProgress: (progress: DownloadProgress) => {
           setDownloadProgress(progress);
         },

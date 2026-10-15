@@ -146,6 +146,7 @@ export function UpdateSection() {
           savePath,
           totalSize: info.fileSize,
           proxySettings: proxyForDownload,
+          githubPat: mirrorChyanSettings.githubPat || undefined,
           onProgress: (progress) => {
             setDownloadProgress(progress);
           },

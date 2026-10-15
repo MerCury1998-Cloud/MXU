@@ -789,6 +789,7 @@ interface DownloadUpdateOptions {
   totalSize?: number;
   onProgress?: (progress: DownloadProgress) => void;
   proxySettings?: ProxySettings; // 代理设置
+  githubPat?: string; // GitHub Personal Access Token，私有库资产下载需要
 }
 
 // 当前下载的保存路径，用于取消时清理临时文件
@@ -839,7 +840,7 @@ export async function downloadUpdate(
     return { success: false };
   }
 
-  const { url, savePath, totalSize, onProgress, proxySettings } = options;
+  const { url, savePath, totalSize, onProgress, proxySettings, githubPat } = options;
 
   log.info(`开始下载更新: ${url}`);
   log.info(`保存路径: ${savePath}`);
@@ -858,6 +859,7 @@ export async function downloadUpdate(
     const downloadPromise = downloadWithProxy(url, savePath, {
       totalSize,
       proxyUrl: proxySettings?.url,
+      githubPat,
     });
 
     // 监听 Rust 后端发送的下载进度事件
