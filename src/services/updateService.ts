@@ -126,6 +126,7 @@ interface GitHubAsset {
   name: string;
   size: number;
   browser_download_url: string;
+  id: number;
 }
 
 // 获取操作系统类型（以后端真实 OS 为准；后端未知时回退到浏览器平台，仅纯前端 dev 预览）
@@ -776,7 +777,10 @@ export async function checkGitHubUpdate(
     hasUpdate,
     versionName,
     releaseNote: release.body || '',
-    downloadUrl: asset?.browser_download_url,
+    // 私有库的 releases/download 直链不接受 PAT（实测恒返回 404），必须走 API 资产端点。
+    downloadUrl: asset
+      ? `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/releases/assets/${asset.id}`
+      : undefined,
     fileSize: asset?.size,
     filename: asset?.name,
     downloadSource: asset ? 'github' : undefined,

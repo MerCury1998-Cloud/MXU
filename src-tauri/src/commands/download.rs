@@ -257,6 +257,12 @@ pub async fn download_file(
 
     let mut request = client.get(&url);
 
+    // GitHub API 资产端点要 Accept: application/octet-stream 才返回文件本体，
+    // 否则只返回 JSON 元数据。
+    if url.starts_with("https://api.github.com/repos/") && url.contains("/releases/assets/") {
+        request = request.header(ACCEPT, "application/octet-stream");
+    }
+
     // 私有库的 release 资产下载同样需要鉴权。GitHub 对该地址会 302 跳到签名地址，
     // reqwest 在跨 host 重定向时默认剥离 Authorization，因此只加在首次请求上。
     if let Some(pat) = github_pat {

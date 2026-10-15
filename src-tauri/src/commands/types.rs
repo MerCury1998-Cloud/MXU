@@ -490,6 +490,8 @@ pub struct GitHubAsset {
     pub name: String,
     pub browser_download_url: String,
     pub size: u64,
+    /// 资产 ID。私有库资产必须走 API 端点下载，releases/download 直链不接受 PAT。
+    pub id: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
