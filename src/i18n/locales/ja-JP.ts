@@ -294,6 +294,10 @@ export default {
     incompatibleController: '現在のコントローラーに対応していません',
     incompatibleResource: '現在のリソースに対応していません',
     supportedControllers: 'のみ対応: {{controllers}}',
+    openQuickAction: 'ファイルを開く',
+    quickActionDesktopOnly: 'ローカルファイルを開けるのはデスクトップ版のみです',
+    quickActionNotFound: 'ファイルはまだ生成されていません: {{path}}',
+    quickActionFailed: 'ファイルを開けませんでした: {{error}}',
   },
 
   // オプション

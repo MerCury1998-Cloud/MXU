@@ -299,6 +299,10 @@ export default {
     incompatibleController: 'Not supported by current controller',
     incompatibleResource: 'Not supported by current resource',
     supportedControllers: 'Only: {{controllers}}',
+    openQuickAction: 'Open file',
+    quickActionDesktopOnly: 'Opening local files is supported in the desktop app only',
+    quickActionNotFound: 'File has not been generated: {{path}}',
+    quickActionFailed: 'Failed to open file: {{error}}',
   },
 
   // Options

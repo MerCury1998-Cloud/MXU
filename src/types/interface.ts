@@ -217,6 +217,14 @@ export interface ResourceItem {
   hash?: string;
 }
 
+/** MXU 扩展：任务卡片上的快捷文件操作。 */
+export interface TaskQuickAction {
+  /** 按钮文本；支持国际化字符串。 */
+  label?: string;
+  /** 相对于应用数据目录的文件路径。 */
+  path: string;
+}
+
 export interface TaskItem {
   name: string;
   label?: string;
@@ -230,6 +238,8 @@ export interface TaskItem {
   controller?: string[];
   pipeline_override?: Record<string, unknown>;
   option?: string[];
+  /** MXU 扩展：在任务卡片上提供一个直接打开本地文件的按钮。 */
+  quick_action?: TaskQuickAction;
 }
 
 export type OptionType = 'select' | 'checkbox' | 'input' | 'switch' | 'hotkey';

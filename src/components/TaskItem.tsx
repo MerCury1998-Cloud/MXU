@@ -12,7 +12,9 @@ import {
   AlertCircle,
   Play,
   CircleDot,
+  ExternalLink,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAppStore, type TaskRunStatus } from '@/stores/appStore';
 import { maaService } from '@/services/maaService';
 import { useResolvedContent } from '@/services/contentResolver';
@@ -33,6 +35,8 @@ import { stripInlineRichText } from '@/utils/richText';
 import clsx from 'clsx';
 import { loggers } from '@/utils/logger';
 import { isPasswordInput } from '@/utils/passwordOptionValues';
+import { getDataPath, isTauri } from '@/utils/paths';
+import { resolveTaskQuickActionPath } from '@/utils/taskQuickAction';
 
 /** 选项预览标签组件 */
 function OptionPreviewTag({
@@ -80,6 +84,42 @@ function OptionPreviewTag({
         </>
       )}
     </span>
+  );
+}
+
+function QuickActionButton({
+  label,
+  loading,
+  compact = false,
+  onClick,
+}: {
+  label: string;
+  loading: boolean;
+  compact?: boolean;
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onPointerDown={(event) => event.stopPropagation()}
+      onClick={onClick}
+      disabled={loading}
+      className={clsx(
+        'inline-flex shrink-0 items-center gap-1 rounded-md border border-border px-2 py-1',
+        'text-xs text-text-secondary transition-colors',
+        'hover:border-accent/40 hover:bg-accent-light hover:text-accent',
+        'disabled:cursor-wait disabled:opacity-60',
+      )}
+      title={label}
+      aria-label={label}
+    >
+      {loading ? (
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+      ) : (
+        <ExternalLink className="h-3.5 w-3.5" />
+      )}
+      {!compact && <span className="max-w-32 truncate">{label}</span>}
+    </button>
   );
 }
 
@@ -319,6 +359,7 @@ export function TaskItem({ instanceId, task }: TaskItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [editName, setEditName] = useState('');
+  const [isQuickActionOpening, setIsQuickActionOpening] = useState(false);
 
   const {
     projectInterface,
@@ -371,6 +412,43 @@ export function TaskItem({ instanceId, task }: TaskItemProps) {
   const currentControllerName = instance?.controllerName || projectInterface?.controller[0]?.name;
   const currentResourceName = instance?.resourceName || projectInterface?.resource[0]?.name;
   const langKey = getInterfaceLangKey(language);
+  const quickAction = taskDef?.quick_action;
+  const quickActionLabel = quickAction
+    ? resolveI18nText(quickAction.label, langKey) || t('taskItem.openQuickAction')
+    : '';
+
+  const handleQuickAction = useCallback(
+    async (event: React.MouseEvent<HTMLButtonElement>) => {
+      event.stopPropagation();
+      if (!quickAction?.path || isQuickActionOpening) return;
+      if (!isTauri()) {
+        toast.error(t('taskItem.quickActionDesktopOnly'));
+        return;
+      }
+
+      setIsQuickActionOpening(true);
+      try {
+        const targetPath = resolveTaskQuickActionPath(await getDataPath(), quickAction.path);
+        const { exists } = await import('@tauri-apps/plugin-fs');
+        if (!(await exists(targetPath))) {
+          toast.error(t('taskItem.quickActionNotFound', { path: quickAction.path }));
+          return;
+        }
+        const { openPath } = await import('@tauri-apps/plugin-opener');
+        await openPath(targetPath);
+      } catch (error) {
+        loggers.ui.error('Failed to open task quick action:', error);
+        toast.error(
+          t('taskItem.quickActionFailed', {
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        );
+      } finally {
+        setIsQuickActionOpening(false);
+      }
+    },
+    [quickAction?.path, isQuickActionOpening, t],
+  );
 
   const isControllerIncompatible = useMemo(() => {
     if (!taskDef?.controller || taskDef.controller.length === 0) return false;
@@ -856,7 +934,15 @@ export function TaskItem({ instanceId, task }: TaskItemProps) {
           </label>
 
           {/* 任务名称 - 紧凑显示 */}
-          <span className="text-xs text-text-muted/70 truncate">{displayName}</span>
+          <span className="flex-1 text-xs text-text-muted/70 truncate">{displayName}</span>
+          {quickAction && (
+            <QuickActionButton
+              label={quickActionLabel}
+              loading={isQuickActionOpening}
+              compact
+              onClick={handleQuickAction}
+            />
+          )}
         </div>
 
         {/* 右键菜单 */}
@@ -1029,6 +1115,14 @@ export function TaskItem({ instanceId, task }: TaskItemProps) {
             </>
           )}
         </div>
+
+        {quickAction && (
+          <QuickActionButton
+            label={quickActionLabel}
+            loading={isQuickActionOpening}
+            onClick={handleQuickAction}
+          />
+        )}
 
         {/* 删除按钮 - hover 时显示，运行时隐藏 */}
         {!isEditing && canDelete && (

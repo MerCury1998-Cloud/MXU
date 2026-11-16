@@ -289,6 +289,10 @@ export default {
     incompatibleController: '不支持当前控制器',
     incompatibleResource: '不支持当前资源',
     supportedControllers: '仅支持: {{controllers}}',
+    openQuickAction: '打开文件',
+    quickActionDesktopOnly: '仅桌面端支持打开本地文件',
+    quickActionNotFound: '文件尚未生成: {{path}}',
+    quickActionFailed: '打开文件失败: {{error}}',
   },
 
   // 选项

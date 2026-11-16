@@ -289,6 +289,10 @@ export default {
     incompatibleController: '현재 컨트롤러에서 지원되지 않음',
     incompatibleResource: '현재 리소스에서 지원되지 않음',
     supportedControllers: '지원 대상: {{controllers}}',
+    openQuickAction: '파일 열기',
+    quickActionDesktopOnly: '로컬 파일 열기는 데스크톱 앱에서만 지원됩니다',
+    quickActionNotFound: '파일이 아직 생성되지 않았습니다: {{path}}',
+    quickActionFailed: '파일을 열지 못했습니다: {{error}}',
   },
 
   // 옵션

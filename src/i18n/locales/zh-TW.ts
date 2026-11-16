@@ -285,6 +285,10 @@ export default {
     incompatibleController: '不支援目前控制器',
     incompatibleResource: '不支援目前資源',
     supportedControllers: '僅支援: {{controllers}}',
+    openQuickAction: '開啟檔案',
+    quickActionDesktopOnly: '僅桌面端支援開啟本機檔案',
+    quickActionNotFound: '檔案尚未產生: {{path}}',
+    quickActionFailed: '開啟檔案失敗: {{error}}',
   },
 
   // 選項
